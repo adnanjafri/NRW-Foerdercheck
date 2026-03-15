@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NRW Fördercheck</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#EEF3F9;color:#1a1a1a;min-height:100vh}
+.app{max-width:480px;margin:0 auto;min-height:100vh;background:#fff}
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.on{display:flex}
+:root{
+  --blu:#0057A8;--blu-lt:#EEF4FB;--blu-dk:#003D7A;
+  --grn:#1D9E75;--grn-lt:#E1F5EE;--grn-dk:#085041;
+  --bdr:rgba(0,0,0,0.1);--rad:12px
+}
+
+/* landing */
+.land-hero{background:var(--blu);padding:52px 24px 36px;color:#fff}
+.nrw-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.18);border-radius:20px;padding:5px 13px;font-size:12px;margin-bottom:20px;font-weight:500}
+.land-h1{font-size:30px;font-weight:500;line-height:1.2;margin-bottom:12px}
+.land-h1 span{opacity:.7}
+.land-sub{font-size:15px;line-height:1.6;opacity:.88;margin-bottom:28px}
+.land-pills{display:flex;gap:8px;flex-wrap:wrap}
+.lpill{background:rgba(255,255,255,0.16);border-radius:20px;padding:5px 13px;font-size:13px}
+.land-body{padding:28px 24px 32px;flex:1;display:flex;flex-direction:column;gap:10px}
+.land-features{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+.feat{background:#f5f7fa;border-radius:var(--rad);padding:14px;display:flex;align-items:flex-start;gap:10px}
+.feat-icon{font-size:18px;margin-top:1px;flex-shrink:0}
+.feat-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.feat-sub{font-size:12px;color:#777}
+.cta-main{background:var(--blu);color:#fff;border:none;border-radius:var(--rad);padding:15px;font-size:16px;font-weight:500;cursor:pointer;width:100%}
+.cta-demo{background:transparent;color:var(--blu);border:0.5px solid var(--bdr);border-radius:var(--rad);padding:13px;font-size:14px;cursor:pointer;width:100%}
+
+/* quiz */
+.quiz-top{padding:16px 20px 0;display:flex;align-items:center;gap:14px;flex-shrink:0}
+.back{width:34px;height:34px;border-radius:50%;border:0.5px solid var(--bdr);background:transparent;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;color:#1a1a1a;flex-shrink:0}
+.prog-wrap{flex:1}
+.prog-lbl{font-size:12px;color:#888;margin-bottom:5px}
+.prog-track{height:4px;background:#eee;border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:var(--blu);border-radius:2px;transition:width .35s}
+.quiz-body{padding:24px 20px 16px;flex:1;overflow-y:auto}
+.quiz-q{font-size:21px;font-weight:500;line-height:1.3;margin-bottom:6px}
+.quiz-hint{font-size:14px;color:#888;margin-bottom:22px;line-height:1.5}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{border:0.5px solid var(--bdr);border-radius:var(--rad);padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:12px;background:#fff;transition:border-color .15s,background .15s;width:100%;text-align:left}
+.opt:hover{border-color:rgba(0,87,168,0.35);background:var(--blu-lt)}
+.opt.sel{border:2px solid var(--blu);background:var(--blu-lt)}
+.opt.msel{border:2px solid var(--blu);background:var(--blu-lt)}
+.opt-ic{font-size:22px;width:36px;text-align:center;flex-shrink:0}
+.opt-title{font-size:15px;font-weight:500;margin-bottom:1px}
+.opt-sub{font-size:12px;color:#777}
+.check{width:20px;height:20px;border-radius:5px;border:0.5px solid var(--bdr);margin-left:auto;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;color:transparent}
+.opt.msel .check{background:var(--blu);border-color:var(--blu);color:#fff}
+.quiz-foot{padding:14px 20px 28px;flex-shrink:0}
+.next{width:100%;background:var(--blu);color:#fff;border:none;border-radius:var(--rad);padding:14px;font-size:15px;font-weight:500;cursor:pointer}
+.next:disabled{opacity:.32;cursor:default}
+
+/* loading */
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px}
+.spin{width:44px;height:44px;border:3px solid #eee;border-top-color:var(--blu);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-txt{font-size:15px;color:#666;text-align:center;line-height:1.6}
+
+/* results */
+.res-hero{background:var(--blu);padding:24px 20px;color:#fff;flex-shrink:0}
+.res-eye{font-size:12px;opacity:.75;margin-bottom:4px;letter-spacing:.03em;text-transform:uppercase}
+.res-h{font-size:22px;font-weight:500;margin-bottom:4px}
+.res-sub{font-size:14px;opacity:.82;margin-bottom:16px;line-height:1.5}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rg-cell{background:rgba(255,255,255,0.15);border-radius:10px;padding:10px 12px}
+.rg-n{font-size:22px;font-weight:500}
+.rg-l{font-size:11px;opacity:.8;margin-top:2px}
+.res-body{padding:16px 20px 0;flex:1;overflow-y:auto}
+.filter-bar{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:16px}
+.filter-bar::-webkit-scrollbar{display:none}
+.fc{padding:6px 14px;border-radius:20px;font-size:13px;white-space:nowrap;cursor:pointer;border:0.5px solid var(--bdr);background:#fff;color:#555;transition:all .15s;flex-shrink:0}
+.fc.on{background:var(--blu);color:#fff;border-color:var(--blu)}
+.gcard{border:0.5px solid var(--bdr);border-radius:var(--rad);padding:14px;margin-bottom:10px}
+.gc-row{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.gc-ic{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.gc-name{font-size:15px;font-weight:500;line-height:1.25;margin-bottom:3px}
+.gc-amount{font-size:13px;font-weight:500;color:var(--grn-dk)}
+.gc-badges{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.bdg{font-size:11px;padding:3px 9px;border-radius:8px}
+.gc-desc{font-size:13px;color:#666;line-height:1.5;margin-bottom:10px}
+.gc-foot{display:flex;align-items:center;justify-content:space-between}
+.gc-where{font-size:12px;color:#999}
+.gc-link{font-size:13px;color:var(--blu);text-decoration:none;font-weight:500}
+
+/* cat colors */
+.cat-fam{background:#FBEAF0;color:#72243E}
+.cat-wohn{background:#EEF4FB;color:#0C447C}
+.cat-enrg{background:#FAEEDA;color:#633806}
+.cat-arb{background:#EEEDFE;color:#3C3489}
+.cat-soz{background:#E1F5EE;color:#085041}
+.ic-fam{background:#FBEAF0}
+.ic-wohn{background:#EEF4FB}
+.ic-enrg{background:#FAEEDA}
+.ic-arb{background:#EEEDFE}
+.ic-soz{background:#E1F5EE}
+.eff-low{background:#E1F5EE;color:#085041}
+.eff-mid{background:#FAEEDA;color:#854F0B}
+.eff-hi{background:#FCEBEB;color:#791F1F}
+.scope-nrw{background:#EEF4FB;color:#003D7A}
+.scope-bund{background:#F1EFE8;color:#444}
+
+/* email box */
+.email-box{background:var(--blu-lt);border-radius:14px;padding:20px;margin:16px 0 8px}
+.email-box h3{font-size:15px;font-weight:500;color:var(--blu-dk);margin-bottom:5px}
+.email-box p{font-size:13px;color:#555;line-height:1.5;margin-bottom:14px}
+.email-row{display:flex;gap:8px}
+.email-in{flex:1;padding:10px 12px;border:0.5px solid var(--bdr);border-radius:8px;font-size:14px;outline:none;background:#fff;color:#1a1a1a;min-width:0}
+.email-in:focus{border-color:var(--blu)}
+.email-sub{background:var(--blu);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.email-ok{font-size:13px;color:var(--grn);margin-top:8px;display:none}
+.restart{width:100%;background:transparent;color:#666;border:0.5px solid var(--bdr);border-radius:var(--rad);padding:12px;font-size:14px;cursor:pointer;margin-bottom:32px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- LANDING -->
+<div id="s-land" class="screen on">
+  <div class="land-hero">
+    <div class="nrw-badge">📍 Nordrhein-Westfalen</div>
+    <div class="land-h1">Welche Förderungen<br><span>stehen dir zu?</span></div>
+    <div class="land-sub">Beantworte 5 kurze Fragen. Wir zeigen dir alle Förderprogramme, Zuschüsse und Vergünstigungen, die du in NRW beantragen kannst.</div>
+    <div class="land-pills">
+      <div class="lpill">20+ Programme</div>
+      <div class="lpill">Kostenlos</div>
+      <div class="lpill">NRW-spezifisch</div>
+      <div class="lpill">2 Minuten</div>
+    </div>
+  </div>
+  <div class="land-body">
+    <div class="land-features">
+      <div class="feat"><div class="feat-icon">🏠</div><div><div class="feat-title">Wohnen</div><div class="feat-sub">KfW, NRW.BANK, Wohngeld</div></div></div>
+      <div class="feat"><div class="feat-icon">👨‍👩‍👧</div><div><div class="feat-title">Familie</div><div class="feat-sub">Kinder-, Elterngeld & mehr</div></div></div>
+      <div class="feat"><div class="feat-icon">🚀</div><div><div class="feat-title">Gründung</div><div class="feat-sub">Stipendien & Darlehen</div></div></div>
+      <div class="feat"><div class="feat-icon">⚡</div><div><div class="feat-title">Energie</div><div class="feat-sub">BAFA, Sanierung, Solar</div></div></div>
+    </div>
+    <button class="cta-main" onclick="startQuiz()">Jetzt Fördercheck starten →</button>
+    <button class="cta-demo" onclick="runDemo()">Demo ansehen (Beispielergebnisse)</button>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="s-quiz" class="screen">
+  <div class="quiz-top">
+    <button class="back" onclick="goBack()">←</button>
+    <div class="prog-wrap">
+      <div class="prog-lbl" id="prog-lbl">Schritt 1 von 5</div>
+      <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:20%"></div></div>
+    </div>
+  </div>
+  <div class="quiz-body" id="quiz-body"></div>
+  <div class="quiz-foot">
+    <button class="next" id="next-btn" disabled onclick="nextStep()">Weiter</button>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="s-load" class="screen">
+  <div class="loading">
+    <div class="spin"></div>
+    <div class="load-txt" id="load-txt">Förderprogramme werden geprüft…</div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="s-res" class="screen">
+  <div class="res-hero">
+    <div class="res-eye">Dein persönliches Ergebnis</div>
+    <div class="res-h" id="res-h">12 Förderprogramme gefunden</div>
+    <div class="res-sub" id="res-sub">Basierend auf deinen Angaben in NRW</div>
+    <div class="res-grid" id="res-grid"></div>
+  </div>
+  <div class="res-body">
+    <div class="filter-bar" id="filter-bar"></div>
+    <div id="grants-list"></div>
+    <div class="email-box">
+      <h3>Ergebnisse per E-Mail erhalten</h3>
+      <p>Wir schicken dir deine Förderliste als PDF + erinnern dich, wenn neue Programme verfügbar sind.</p>
+      <div class="email-row">
+        <input class="email-in" type="email" placeholder="deine@email.de" id="email-in">
+        <button class="email-sub" onclick="submitEmail()">Senden</button>
+      </div>
+      <div class="email-ok" id="email-ok">✓ Danke! Deine Ergebnisse wurden gesendet.</div>
+    </div>
+    <button class="restart" onclick="restart()">← Neue Prüfung starten</button>
+  </div>
+</div>
+
+</div>
+<script>
+const STEPS = [
+  {
+    id:'situation', q:'Wie ist deine aktuelle Lebenssituation?', hint:'Wähle die Option, die am besten zu dir passt.',
+    multi:false,
+    opts:[
+      {v:'single',   ic:'🧑',  title:'Ich lebe allein',          sub:'Single-Haushalt'},
+      {v:'couple',   ic:'👫',  title:'Paar ohne Kinder',         sub:'Zwei Erwachsene im Haushalt'},
+      {v:'family',   ic:'👨‍👩‍👧', title:'Familie mit Kindern',      sub:'Mit einem oder mehreren Kindern'},
+      {v:'single_p', ic:'🧑‍👧', title:'Alleinerziehend',          sub:'Kinder im Haushalt'},
+      {v:'retired',  ic:'🧓',  title:'Rentner / in Rente',       sub:'Nicht mehr erwerbstätig'},
+    ]
+  },
+  {
+    id:'housing', q:'Wie wohnst du aktuell?', hint:'Deine Wohnsituation bestimmt viele Fördermöglichkeiten.',
+    multi:false,
+    opts:[
+      {v:'rent',  ic:'🏢', title:'Ich bin Mieter',              sub:'Zur Miete in einer Wohnung/Haus'},
+      {v:'owner', ic:'🏠', title:'Ich bin Eigentümer',          sub:'Ich besitze meine Immobilie'},
+      {v:'buy',   ic:'🔑', title:'Ich plane Kauf oder Neubau',  sub:'In den nächsten 12–24 Monaten'},
+    ]
+  },
+  {
+    id:'employment', q:'Was ist dein Beschäftigungsstatus?', hint:'Bitte wähle deine aktuelle Hauptbeschäftigung.',
+    multi:false,
+    opts:[
+      {v:'employed',    ic:'💼', title:'Angestellt / Beamter',       sub:'Festanstellung oder Teilzeit'},
+      {v:'selfemployed',ic:'🧑‍💻',title:'Selbständig / Freiberufler', sub:'Eigenes Unternehmen oder Freelance'},
+      {v:'student',     ic:'🎓', title:'Studierend / Auszubildend',   sub:'Hochschule, Uni oder Ausbildung'},
+      {v:'unemployed',  ic:'📋', title:'Arbeitssuchend',              sub:'Jobcenter oder Arbeitsagentur'},
+      {v:'notworking',  ic:'🌿', title:'Nicht erwerbstätig',          sub:'Elternzeit, Pflege, Rente'},
+    ]
+  },
+  {
+    id:'income', q:'Wie hoch ist dein monatliches Haushaltsnetto?', hint:'Ungefährer Betrag aller Einkommen im Haushalt.',
+    multi:false,
+    opts:[
+      {v:'low',    ic:'💶', title:'Unter 1.500 €',    sub:'Inkl. staatliche Leistungen'},
+      {v:'mid',    ic:'💶', title:'1.500 – 3.000 €',  sub:'Durchschnittlicher Haushalt'},
+      {v:'high',   ic:'💶', title:'3.000 – 5.000 €',  sub:'Überdurchschnittlich'},
+      {v:'vhigh',  ic:'💶', title:'Über 5.000 €',     sub:'Hohes Haushaltseinkommen'},
+    ]
+  },
+  {
+    id:'plans', q:'Was planst du in den nächsten 2 Jahren?', hint:'Mehrfachauswahl möglich.',
+    multi:true,
+    opts:[
+      {v:'renovation', ic:'🔧', title:'Sanierung oder neue Heizung', sub:'Energetisch modernisieren'},
+      {v:'business',   ic:'🚀', title:'Unternehmen gründen',         sub:'Selbständigkeit oder Startup'},
+      {v:'education',  ic:'📚', title:'Weiterbildung / Umschulung',  sub:'Berufliche Qualifizierung'},
+      {v:'care',       ic:'🤝', title:'Pflege eines Angehörigen',    sub:'Zuhause oder teilstationär'},
+      {v:'none',       ic:'🌀', title:'Nichts davon',                sub:'Kein besonderes Vorhaben'},
+    ]
+  }
+];
+
+const GRANTS = [
+  // Familie
+  {id:1,cat:'Familie',catCls:'cat-fam',icCls:'ic-fam',ic:'👨‍👩‍👧',name:'Kindergeld',amount:'bis €250/Monat pro Kind',desc:'Monatliche staatliche Zahlung für jedes Kind bis 18 Jahre (bis 25 in Ausbildung). Wird automatisch mit der Anmeldung bei der Familienkasse beantragt.',where:'Familienkasse',effort:'eff-low',effortLbl:'Einfach',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.familienkasse.de',monthlyVal:250,match:a=>a.hasKids},
+  {id:2,cat:'Familie',catCls:'cat-fam',icCls:'ic-fam',ic:'🤱',name:'Elterngeld',amount:'65–100 % des Nettoeinkommens',desc:'Einkommensersatz für Eltern nach der Geburt eines Kindes, für bis zu 14 Monate (28 Monate als ElterngeldPlus). Maximal €1.800/Monat.',where:'Elterngeldstelle NRW',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.elterngeld-digital.de',monthlyVal:900,match:a=>a.hasKids&&a.employment!=='retired'},
+  {id:3,cat:'Familie',catCls:'cat-fam',icCls:'ic-fam',ic:'💶',name:'Kinderzuschlag',amount:'bis €292/Monat pro Kind',desc:'Zusätzliche Zahlung für Familien mit Kindergeld, die trotz Arbeit wenig verdienen. Verhindert, dass Familien auf Bürgergeld angewiesen sind.',where:'Familienkasse',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.arbeitsagentur.de/kiz',monthlyVal:292,match:a=>a.hasKids&&(a.income==='low'||a.income==='mid')},
+  {id:4,cat:'Familie',catCls:'cat-fam',icCls:'ic-fam',ic:'🎒',name:'Bildungs- und Teilhabepaket',amount:'bis €35/Monat + Ausflüge',desc:'Für Kinder aus einkommensschwachen Familien: Schulausflüge, Mittagessen, Nachhilfe, Vereinsbeiträge und Schulmaterialien werden bezuschusst.',where:'Jobcenter oder Sozialamt',effort:'eff-low',effortLbl:'Einfach',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.bmas.de/bildung-und-teilhabe',monthlyVal:35,match:a=>a.hasKids&&a.income==='low'},
+
+  // Wohnen
+  {id:5,cat:'Wohnen',catCls:'cat-wohn',icCls:'ic-wohn',ic:'🏠',name:'Wohngeld',amount:'bis €370/Monat',desc:'Staatlicher Zuschuss zu den Wohnkosten für Mieter und Eigentümer mit geringem Einkommen. Seit 2023 deutlich erhöht und mehr Haushalte anspruchsberechtigt.',where:'Wohngeldstelle der Gemeinde',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.bmwsb.bund.de/wohngeld',monthlyVal:370,match:a=>a.income==='low'},
+  {id:6,cat:'Wohnen',catCls:'cat-wohn',icCls:'ic-wohn',ic:'🏡',name:'NRW.BANK Wohnraumförderung',amount:'Darlehen ab 0,5 % Zinsen',desc:'Zinsgünstige Darlehen für den Kauf oder Bau einer selbstgenutzten Immobilie in NRW. Besonders für Familien mit Kindern sehr attraktiv – bis €250.000.',where:'NRW.BANK über Hausbank',effort:'eff-hi',effortLbl:'Aufwändig',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.nrwbank.de/wohnraumfoerderung',monthlyVal:0,match:a=>a.housing==='buy'&&(a.income==='low'||a.income==='mid')},
+  {id:7,cat:'Wohnen',catCls:'cat-wohn',icCls:'ic-wohn',ic:'🔑',name:'KfW Wohneigentumsprogramm',amount:'bis €100.000 Kredit',desc:'Günstiger KfW-Kredit für den Kauf oder Bau einer selbstgenutzten Immobilie. Flexible Laufzeiten, tilgungsfreie Anlaufjahre. Kombinierbar mit NRW-Förderung.',where:'KfW über Hausbank',effort:'eff-hi',effortLbl:'Aufwändig',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.kfw.de/inlandsfoerderung/Privatpersonen/Neubau',monthlyVal:0,match:a=>a.housing==='buy'},
+  {id:8,cat:'Wohnen',catCls:'cat-wohn',icCls:'ic-wohn',ic:'🌱',name:'KfW Klimafreundlicher Neubau',amount:'bis €150.000 Kredit',desc:'Zinsgünstiger Kredit für den Neubau oder Erstkauf klimafreundlicher, energieeffizienter Gebäude. Besonders lohnend für Energieeffizienzhaus-40-Standard.',where:'KfW über Hausbank',effort:'eff-hi',effortLbl:'Aufwändig',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.kfw.de/klimafreundlicher-neubau',monthlyVal:0,match:a=>a.housing==='buy'},
+
+  // Energie
+  {id:9,cat:'Energie',catCls:'cat-enrg',icCls:'ic-enrg',ic:'♨️',name:'BAFA Heizungsförderung',amount:'bis 70 % der Kosten',desc:'Zuschuss beim Austausch einer alten Heizung gegen Wärmepumpe, Fernwärme oder Solarthermie. Bei Kombination mit Einkommensbonus und Geschwindigkeitsbonus bis zu 70 %.',where:'Bundesamt für Wirtschaft (BAFA)',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.bafa.de/heizungsfoerderung',monthlyVal:0,match:a=>(a.housing==='owner'||a.housing==='buy')&&a.plans.includes('renovation')},
+  {id:10,cat:'Energie',catCls:'cat-enrg',icCls:'ic-enrg',ic:'🏗️',name:'KfW Bundesförderung Effizienzgebäude',amount:'bis €150.000 Kredit + Tilgungszuschuss',desc:'Kredit und Tilgungszuschuss für energetische Sanierung: Dämmung, neue Fenster, Heizungstausch. Bis zu 20 % Tilgungszuschuss auf den Kreditbetrag.',where:'KfW über Hausbank',effort:'eff-hi',effortLbl:'Aufwändig',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.kfw.de/effizienzgebaeude',monthlyVal:0,match:a=>(a.housing==='owner'||a.housing==='buy')&&a.plans.includes('renovation')},
+  {id:11,cat:'Energie',catCls:'cat-enrg',icCls:'ic-enrg',ic:'☀️',name:'progres.nrw – Erneuerbare Energien',amount:'bis €7.500 Zuschuss',desc:'NRW-Förderprogramm für Solaranlagen, Wärmepumpen und Energiespeicher. Kombinierbar mit BAFA-Förderung für maximale Förderquote.',where:'NRW.BANK / Bezirksregierung',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.nrwbank.de/progres',monthlyVal:0,match:a=>a.housing==='owner'&&a.plans.includes('renovation')},
+  {id:12,cat:'Energie',catCls:'cat-enrg',icCls:'ic-enrg',ic:'❄️',name:'Sofortprogramm Wärme NRW',amount:'bis €2.000 Zuschuss',desc:'NRW-spezifische Soforthilfe für einkommensschwache Haushalte zur Reduzierung der Energiekosten. Antrag bei der Bezirksregierung.',where:'Bezirksregierung NRW',effort:'eff-low',effortLbl:'Einfach',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.nrw.de/foerderung',monthlyVal:0,match:a=>a.income==='low'&&a.plans.includes('renovation')},
+
+  // Bildung & Arbeit
+  {id:13,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'🎓',name:'BAföG',amount:'bis €992/Monat',desc:'Staatliche Ausbildungsförderung für Studierende und Schüler. 50 % Zuschuss (muss nicht zurückgezahlt werden) + 50 % zinsloses Darlehen.',where:'Studierendenwerk / Amt für Ausbildungsförderung',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.bafög.de',monthlyVal:992,match:a=>a.employment==='student'},
+  {id:14,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'📚',name:'NRW Bildungsscheck',amount:'bis €500 pro Bildungsscheck',desc:'Bis zu 50 % der Kursgebühren für berufliche Weiterbildung – maximal €500. Pro Jahr zwei Schecks möglich. Kostenlose Beratung inklusive.',where:'Beratungsstellen in NRW',effort:'eff-low',effortLbl:'Einfach',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.weiterbildungsberatung.nrw',monthlyVal:0,match:a=>a.employment==='employed'&&a.plans.includes('education')},
+  {id:15,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'🔨',name:'Meistergründungsprämie NRW',amount:'€7.500 Einmalzuschuss',desc:'Einmaliger Zuschuss für Handwerksmeister, die sich in NRW selbständig machen oder einen Betrieb übernehmen oder gründen.',where:'Handwerkskammer NRW',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.hwk-nrw.de',monthlyVal:0,match:a=>a.plans.includes('business')},
+  {id:16,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'🚀',name:'NRW Gründerstipendium',amount:'€1.000/Monat × 12 Monate',desc:'Monatliches Stipendium für innovative Gründungsvorhaben in NRW. Bewerbung über Hochschulen und Forschungseinrichtungen möglich.',where:'MWIDE NRW',effort:'eff-hi',effortLbl:'Aufwändig',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.nrw.de/gruenderstipendium',monthlyVal:0,match:a=>a.plans.includes('business')},
+  {id:17,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'💼',name:'NRW.BANK Mikrodarlehen',amount:'bis €25.000 Kredit',desc:'Kleindarlehen für Gründer und Kleinstunternehmen in NRW – auch ohne Sicherheiten erhältlich. Günstige Zinsen, flexible Laufzeiten.',where:'NRW.BANK über Hausbank',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.nrwbank.de/mikrodarlehen',monthlyVal:0,match:a=>a.plans.includes('business')},
+  {id:18,cat:'Bildung & Arbeit',catCls:'cat-arb',icCls:'ic-arb',ic:'🔄',name:'Qualifizierungsgeld',amount:'60–67 % des Nettolohns',desc:'Lohnersatz für Beschäftigte, die sich durch Weiterbildung für neue Tätigkeiten qualifizieren. Neu seit April 2024 und noch wenig bekannt.',where:'Bundesagentur für Arbeit',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.arbeitsagentur.de/qualifizierungsgeld',monthlyVal:0,match:a=>a.employment==='employed'&&a.plans.includes('education')},
+
+  // Soziales
+  {id:19,cat:'Soziales',catCls:'cat-soz',icCls:'ic-soz',ic:'🚌',name:'Sozialticket NRW',amount:'€29,90/Monat ÖPNV',desc:'Stark vergünstigtes Monatsticket für den gesamten öffentlichen Nahverkehr in NRW. Für Empfänger von Bürgergeld, Wohngeld und weiteren Leistungen.',where:'Lokales Verkehrsunternehmen / VRR / VRS',effort:'eff-low',effortLbl:'Einfach',scope:'scope-nrw',scopeLbl:'NRW',link:'https://www.sozialticket.nrw',monthlyVal:0,match:a=>a.income==='low'},
+  {id:20,cat:'Soziales',catCls:'cat-soz',icCls:'ic-soz',ic:'📋',name:'Bürgergeld',amount:'bis €563/Monat',desc:'Grundsicherung für arbeitssuchende Erwachsene. Deckt Lebenshaltungskosten und Unterkunft ab. Antrag beim Jobcenter stellen.',where:'Jobcenter',effort:'eff-low',effortLbl:'Einfach',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.arbeitsagentur.de/buergergeld',monthlyVal:563,match:a=>a.employment==='unemployed'},
+  {id:21,cat:'Soziales',catCls:'cat-soz',icCls:'ic-soz',ic:'💊',name:'Pflegegeld',amount:'bis €901/Monat',desc:'Monatliches Pflegegeld für pflegebedürftige Personen, die zuhause durch Angehörige betreut werden. Pflegegrad 1–5, Antrag bei der Pflegekasse.',where:'Pflegekasse',effort:'eff-mid',effortLbl:'Mittel',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.pflege.de/pflegegeld',monthlyVal:901,match:a=>a.plans.includes('care')},
+  {id:22,cat:'Soziales',catCls:'cat-soz',icCls:'ic-soz',ic:'👩‍⚕️',name:'Pflegeunterstützungsgeld',amount:'10 Arbeitstage bezahlt frei',desc:'Beschäftigte können bis zu 10 Arbeitstage bezahlte Auszeit nehmen, um die Pflege eines nahen Angehörigen zu organisieren.',where:'Arbeitgeber / Pflegekasse',effort:'eff-low',effortLbl:'Einfach',scope:'scope-bund',scopeLbl:'Bundesweit',link:'https://www.bundesgesundheitsministerium.de',monthlyVal:0,match:a=>a.plans.includes('care')&&a.employment==='employed'},
+];
+
+let step=0, answers={situation:null,housing:null,employment:null,income:null,plans:[],hasKids:false}, activeFilter='Alle';
+let matchedGrants=[];
+
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');}
+
+function startQuiz(){step=0;answers={situation:null,housing:null,employment:null,income:null,plans:[],hasKids:false};renderStep();show('s-quiz');}
+
+function runDemo(){
+  answers={situation:'family',housing:'owner',employment:'employed',income:'mid',plans:['renovation','education'],hasKids:true};
+  showResults();
+}
+
+function renderStep(){
+  const s=STEPS[step];
+  const pct=Math.round(((step+1)/STEPS.length)*100);
+  document.getElementById('prog-lbl').textContent=`Schritt ${step+1} von ${STEPS.length}`;
+  document.getElementById('prog-fill').style.width=pct+'%';
+  document.getElementById('next-btn').disabled=true;
+  const cur=answers[s.id];
+  document.getElementById('quiz-body').innerHTML=`
+    <div class="quiz-q">${s.q}</div>
+    <div class="quiz-hint">${s.hint}</div>
+    <div class="opts" id="opts">
+      ${s.opts.map(o=>{
+        const isSel=s.multi?answers.plans.includes(o.v):cur===o.v;
+        const cls=isSel?(s.multi?'opt msel':'opt sel'):'opt';
+        return `<button class="${cls}" onclick="pick('${o.v}')">
+          <span class="opt-ic">${o.ic}</span>
+          <div class="opt-text"><div class="opt-title">${o.title}</div><div class="opt-sub">${o.sub}</div></div>
+          ${s.multi?`<div class="check${isSel?' chk':''}">✓</div>`:''}
+        </button>`;
+      }).join('')}
+    </div>`;
+  checkNext();
+}
+
+function pick(v){
+  const s=STEPS[step];
+  if(s.multi){
+    if(v==='none'){answers.plans=answers.plans.includes('none')?[]:['none'];}
+    else{
+      answers.plans=answers.plans.filter(x=>x!=='none');
+      if(answers.plans.includes(v))answers.plans=answers.plans.filter(x=>x!==v);
+      else answers.plans.push(v);
+    }
+  } else {
+    answers[s.id]=v;
+  }
+  renderStep();
+}
+
+function checkNext(){
+  const s=STEPS[step];
+  const ok=s.multi?answers.plans.length>0:answers[s.id]!==null;
+  document.getElementById('next-btn').disabled=!ok;
+}
+
+function nextStep(){
+  if(step<STEPS.length-1){step++;renderStep();}
+  else{answers.hasKids=['family','single_p'].includes(answers.situation);runResults();}
+}
+
+function goBack(){
+  if(step===0)show('s-land');
+  else{step--;renderStep();}
+}
+
+function runResults(){
+  show('s-load');
+  const msgs=['Förderprogramme werden geprüft…','NRW-spezifische Programme laden…','Einkommensregeln werden geprüft…','Ergebnisse werden zusammengestellt…'];
+  let i=0;
+  const iv=setInterval(()=>{
+    document.getElementById('load-txt').textContent=msgs[Math.min(i++,msgs.length-1)];
+    if(i>=msgs.length){clearInterval(iv);setTimeout(showResults,500);}
+  },600);
+}
+
+function showResults(){
+  answers.hasKids=['family','single_p'].includes(answers.situation);
+  matchedGrants=GRANTS.filter(g=>g.match(answers));
+  const cats=[...new Set(matchedGrants.map(g=>g.cat))];
+  const monthlySum=matchedGrants.reduce((s,g)=>s+(g.monthlyVal||0),0);
+
+  // hero stats
+  document.getElementById('res-h').textContent=`${matchedGrants.length} Förderprogramme gefunden`;
+  document.getElementById('res-sub').textContent=`Für deine Situation in NRW – darunter ${cats.length} Kategorien`;
+  const catCounts={};matchedGrants.forEach(g=>catCounts[g.cat]=(catCounts[g.cat]||0)+1);
+  const topCats=Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+  document.getElementById('res-grid').innerHTML=topCats.map(([c,n])=>`
+    <div class="rg-cell"><div class="rg-n">${n}</div><div class="rg-l">${c}</div></div>`).join('')+
+    (monthlySum>0?`<div class="rg-cell" style="grid-column:1/-1"><div class="rg-n">bis €${monthlySum.toLocaleString('de-DE')}</div><div class="rg-l">Mögliche monatliche Förderung</div></div>`:'');
+
+  // filters
+  const allCats=['Alle',...cats];
+  document.getElementById('filter-bar').innerHTML=allCats.map(c=>`<div class="fc${activeFilter===c?' on':''}" onclick="setFilter('${c}')">${c}</div>`).join('');
+
+  renderGrants();
+  show('s-res');
+}
+
+function setFilter(cat){
+  activeFilter=cat;
+  document.querySelectorAll('.fc').forEach(f=>f.classList.toggle('on',f.textContent===cat));
+  renderGrants();
+}
+
+function renderGrants(){
+  const filtered=activeFilter==='Alle'?matchedGrants:matchedGrants.filter(g=>g.cat===activeFilter);
+  document.getElementById('grants-list').innerHTML=filtered.map(g=>`
+    <div class="gcard">
+      <div class="gc-row">
+        <div class="gc-ic ${g.icCls}">${g.ic}</div>
+        <div>
+          <div class="gc-name">${g.name}</div>
+          <div class="gc-amount">${g.amount}</div>
+        </div>
+      </div>
+      <div class="gc-badges">
+        <span class="bdg ${g.catCls}">${g.cat}</span>
+        <span class="bdg ${g.effort}">${g.effortLbl}</span>
+        <span class="bdg ${g.scope}">${g.scopeLbl}</span>
+      </div>
+      <div class="gc-desc">${g.desc}</div>
+      <div class="gc-foot">
+        <span class="gc-where">${g.where}</span>
+        <a class="gc-link" href="${g.link}" target="_blank">Mehr erfahren →</a>
+      </div>
+    </div>`).join('');
+}
+
+function submitEmail(){
+  const v=document.getElementById('email-in').value.trim();
+  if(!v||!v.includes('@'))return;
+  document.getElementById('email-ok').style.display='block';
+  document.getElementById('email-in').value='';
+}
+
+function restart(){activeFilter='Alle';show('s-land');}
+</script>
+</body>
+</html>
